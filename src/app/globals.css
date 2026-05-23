@@ -1,0 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Outfit', system-ui, -apple-system, sans-serif;
+
+  /* Premium Logo Gradient Colors */
+  --color-brand-slate: #161f28;
+  --color-brand-wine: #7b0a1c;
+  --color-brand-peach: #e77e4e;
+  --color-brand-crimson: #b6142c;
+
+  /* Extra Fashion-Business Tones */
+  --color-brand-bronze: #c5a880;
+  --color-brand-steel: #4a6572;
+  --color-brand-sage: #5f8575;
+  --color-brand-rosewood: #9c6644;
+
+  /* Tints for backgrounds and highlights */
+  --color-brand-wine-light: #fef5f6;
+  --color-brand-peach-light: #fffbf9;
+  --color-brand-slate-light: #f4f6f8;
+
+  /* Semantic Status Mappings */
+  --color-status-success: #5f8575;
+  --color-status-success-light: #f1f6f4;
+  --color-status-warning: #e77e4e;
+  --color-status-warning-light: #fffbf9;
+  --color-status-danger: #b6142c;
+  --color-status-danger-light: #fef5f6;
+  --color-status-info: #4a6572;
+  --color-status-info-light: #f0f3f5;
+
+  /* Custom shadows and borders */
+  --shadow-glass: 0 8px 32px 0 rgba(123, 10, 28, 0.04);
+  --shadow-premium: 0 4px 20px -2px rgba(22, 31, 40, 0.03), 0 2px 12px -4px rgba(22, 31, 40, 0.02);
+  --shadow-heavy: 0 20px 25px -5px rgba(22, 31, 40, 0.1), 0 10px 10px -5px rgba(22, 31, 40, 0.04);
+
+  --animate-fade-in: fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-up: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #161f28;
+}
+
+.dark {
+  --background: #0f141a;
+  --foreground: #f4f6f8;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.dark .glass-panel {
+  background: rgba(22, 31, 40, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Premium Gradients */
+.bg-gradient-logo {
+  background: linear-gradient(135deg, #7b0a1c 0%, #b6142c 50%, #e77e4e 100%);
+}
+
+.bg-gradient-soft {
+  background: linear-gradient(135deg, #fffbf9 0%, #fef5f6 50%, #f4f6f8 100%);
+}
+
+.dark .bg-gradient-soft {
+  background: linear-gradient(135deg, #161f28 0%, #1c2630 50%, #0f141a 100%);
+}
+
+.text-gradient-logo {
+  background: linear-gradient(135deg, #7b0a1c 0%, #b6142c 60%, #e77e4e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Hide Scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom Table Row Transitions */
+tr {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Page Transitions */
+.page-transition {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}

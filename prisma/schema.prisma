@@ -1,0 +1,120 @@
+// prisma/schema.prisma
+// Database schema for Klader Business Dashboard
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  name         String
+  passwordHash String
+  role         String   // ADMIN, PARTNER, STAFF, VIEWER
+  permissions  String   // Comma-separated list of actions
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  partner      Partner?
+}
+
+model Partner {
+  id                  Int           @id @default(autoincrement())
+  name                String
+  phone               String
+  investmentAmount    Float         @default(0)
+  ownershipPercentage Float         @default(0)
+  partnerType         String        // INVESTOR, NON_INVESTING, SILENT
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  userId              Int?          @unique
+  user                User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  transactions        Transaction[]
+}
+
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  partnerId   Int
+  partner     Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  type        String   // WITHDRAWAL, INVESTMENT
+  amount      Float
+  status      String   // PENDING, APPROVED, REJECTED
+  requestedBy String
+  approvedBy  String?
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Product {
+  id            Int         @id @default(autoincrement())
+  name          String
+  sku           String      @unique
+  category      String
+  color         String
+  size          String
+  buyingPrice   Float
+  sellingPrice  Float
+  stockQuantity Int
+  imageUrl      String?
+  supplierName  String
+  status        String      // IN_STOCK, LOW_STOCK, OUT_OF_STOCK
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  orderItems    OrderItem[]
+}
+
+model Order {
+  id             Int         @id @default(autoincrement())
+  customerName   String
+  customerPhone  String
+  customerAddress String
+  printedOrSolid String      // PRINTED, SOLID
+  printSize      String?
+  printCost      Float       @default(0)
+  deliveryCharge Float       @default(0)
+  advancePayment Float       @default(0)
+  remainingDue   Float
+  paymentStatus  String      // PAID, PARTIAL, UNPAID
+  paymentMethod  String      // CASH, BANK, BKASH, NAGAD, ROCKET
+  deliveryStatus String      // PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+  totalAmount    Float
+  profit         Float
+  orderItems     OrderItem[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model OrderItem {
+  id           Int      @id @default(autoincrement())
+  orderId      Int
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity     Int
+  sellingPrice Float
+  size         String
+  color        String
+}
+
+model Expense {
+  id            Int      @id @default(autoincrement())
+  category      String   // ONLINE_BOOSTING, PACKAGING, ACCESSORIES, MARKETING, TRANSPORT, SALARY, UTILITIES, OTHERS
+  amount        Float
+  description   String
+  attachmentUrl String?
+  date          DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  user      String
+  action    String
+  timestamp DateTime @default(now())
+}
