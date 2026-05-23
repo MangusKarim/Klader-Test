@@ -23,9 +23,8 @@ async function ensureDatabaseSchema() {
       console.log("Database table missing. Running prisma db push programmatically...");
       try {
         const schemaPath = path.resolve(process.cwd(), "prisma", "schema.prisma");
-        const cmd = process.platform === "win32"
-          ? `npx.cmd prisma db push --schema="${schemaPath}" --accept-data-loss`
-          : `npx prisma db push --schema="${schemaPath}" --accept-data-loss`;
+        const prismaCliPath = path.resolve(process.cwd(), "node_modules", "prisma", "build", "index.js");
+        const cmd = `node "${prismaCliPath}" db push --schema="${schemaPath}" --accept-data-loss`;
         const output = execSync(cmd, {
           env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL || "file:./dev.db" }
         });
