@@ -3,9 +3,46 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
 import { hashPassword, generateToken } from "@/lib/crypto";
+import { execSync } from "child_process";
+import fs from "fs";
+import path from "path";
+
+async function ensureDatabaseSchema() {
+  // Ensure .env file exists with default DATABASE_URL
+  const envPath = path.resolve(process.cwd(), ".env");
+  if (!process.env.DATABASE_URL && !fs.existsSync(envPath)) {
+    fs.writeFileSync(envPath, 'DATABASE_URL="file:./dev.db"\n');
+    process.env.DATABASE_URL = "file:./dev.db";
+  }
+
+  // Check if User table exists
+  try {
+    await db.user.count();
+  } catch (error: any) {
+    if (error.message?.includes("does not exist") || error.code === "P2021" || error.message?.includes("User")) {
+      console.log("Database table missing. Running prisma db push programmatically...");
+      try {
+        const cmd = process.platform === "win32" ? "npx.cmd prisma db push --accept-data-loss" : "npx prisma db push --accept-data-loss";
+        execSync(cmd, {
+          env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL || "file:./dev.db" },
+          stdio: "inherit"
+        });
+        console.log("Database schema pushed successfully!");
+      } catch (pushError: any) {
+        console.error("Failed to push prisma schema:", pushError);
+        throw new Error(`Failed to push prisma schema: ${pushError.message}`);
+      }
+    } else {
+      throw error;
+    }
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Ensure database schema and tables exist
+    await ensureDatabaseSchema();
+
     const { username, password } = await req.json();
 
     if (!username || !password) {
