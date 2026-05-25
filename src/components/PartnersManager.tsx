@@ -29,6 +29,7 @@ interface Partner {
   createdAt: string;
   userId: number | null;
   username: string | null;
+  role: string | null;
   totalInvestments: number;
   totalWithdrawals: number;
   profitShare: number;
@@ -87,10 +88,12 @@ export default function PartnersManager() {
   const [initialInv, setInitialInv] = useState("0");
   const [partnerUsername, setPartnerUsername] = useState("");
   const [partnerPassword, setPartnerPassword] = useState("");
+  const [accessLevel, setAccessLevel] = useState("VIEW");
 
   // Form inputs - Edit Partner
   const [editUsername, setEditUsername] = useState("");
   const [editPassword, setEditPassword] = useState("");
+  const [editAccessLevel, setEditAccessLevel] = useState("VIEW");
   const [additionalInv, setAdditionalInv] = useState("0");
 
   // Form inputs - Transaction Request
@@ -147,6 +150,7 @@ export default function PartnersManager() {
           investmentAmount: parseFloat(initialInv),
           username: partnerUsername.trim() || undefined,
           password: partnerPassword || undefined,
+          accessLevel: partnerUsername.trim() ? accessLevel : undefined,
         }),
       });
 
@@ -179,6 +183,7 @@ export default function PartnersManager() {
           ownershipPercentage: parseFloat(ownershipPct),
           username: editUsername.trim() || (editUsername === "" ? "" : undefined),
           password: editPassword || undefined,
+          accessLevel: editUsername.trim() ? editAccessLevel : undefined,
           additionalInvestment: parseFloat(additionalInv),
         }),
       });
@@ -279,8 +284,10 @@ export default function PartnersManager() {
     setInitialInv("0");
     setPartnerUsername("");
     setPartnerPassword("");
+    setAccessLevel("VIEW");
     setEditUsername("");
     setEditPassword("");
+    setEditAccessLevel("VIEW");
     setAdditionalInv("0");
     setSelectedPartner(null);
   };
@@ -300,6 +307,15 @@ export default function PartnersManager() {
     setOwnershipPct(partner.ownershipPercentage.toString());
     setEditUsername(partner.username || "");
     setEditPassword("");
+    
+    let currentLevel = "VIEW";
+    if (partner.role === "ADMIN") {
+      currentLevel = "FULL";
+    } else if (partner.role === "STAFF") {
+      currentLevel = "SALES";
+    }
+    setEditAccessLevel(currentLevel);
+    
     setAdditionalInv("0");
     setShowEditModal(true);
   };
@@ -511,8 +527,15 @@ export default function PartnersManager() {
                           <div className="text-[10px] text-slate-400 mt-0.5 space-y-0.5">
                             <div>{p.phone} &bull; <span className="uppercase text-[9px] font-bold text-brand-wine dark:text-brand-peach">{p.partnerType}</span></div>
                             {p.username && (
-                              <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 font-medium text-[9px]">
-                                <Key className="h-2.5 w-2.5 text-brand-bronze" /> Username: <span className="font-mono text-brand-steel dark:text-slate-300">{p.username}</span>
+                              <div className="flex flex-col gap-0.5 mt-0.5">
+                                <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 font-medium text-[9px]">
+                                  <Key className="h-2.5 w-2.5 text-brand-bronze" /> Username: <span className="font-mono text-brand-steel dark:text-slate-300">{p.username}</span>
+                                </div>
+                                <div className="text-[9px] font-bold text-slate-450 dark:text-slate-400">
+                                  Access: <span className={`font-extrabold uppercase ${p.role === "ADMIN" ? "text-brand-wine dark:text-brand-peach" : p.role === "STAFF" ? "text-blue-600" : "text-brand-rosewood dark:text-amber-500"}`}>
+                                    {p.role === "ADMIN" ? "Full Access" : p.role === "STAFF" ? "Sales Access" : "View Access"}
+                                  </span>
+                                </div>
                               </div>
                             )}
                           </div>
@@ -768,6 +791,20 @@ export default function PartnersManager() {
                       className="w-full p-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white"
                     />
                   </div>
+                  {partnerUsername.trim() && (
+                    <div className="space-y-1 col-span-2">
+                      <label className="font-semibold text-slate-650">Access Level</label>
+                      <select
+                        value={accessLevel}
+                        onChange={(e) => setAccessLevel(e.target.value)}
+                        className="w-full p-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-850 dark:text-white"
+                      >
+                        <option value="VIEW">View Access (Cant Edit Anything Only View All)</option>
+                        <option value="SALES">Sales Access (Only Edit Stock And Sales)</option>
+                        <option value="FULL">Full Access (Edit Anything)</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -891,6 +928,20 @@ export default function PartnersManager() {
                       className="w-full p-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white"
                     />
                   </div>
+                  {editUsername.trim() && (
+                    <div className="space-y-1 col-span-2">
+                      <label className="font-semibold text-slate-650">Access Level</label>
+                      <select
+                        value={editAccessLevel}
+                        onChange={(e) => setEditAccessLevel(e.target.value)}
+                        className="w-full p-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-850 dark:text-white"
+                      >
+                        <option value="VIEW">View Access (Cant Edit Anything Only View All)</option>
+                        <option value="SALES">Sales Access (Only Edit Stock And Sales)</option>
+                        <option value="FULL">Full Access (Edit Anything)</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
 

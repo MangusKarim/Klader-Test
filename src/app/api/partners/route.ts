@@ -81,6 +81,7 @@ export async function GET(req: NextRequest) {
         createdAt: p.createdAt,
         userId: p.userId,
         username: p.user?.username || null,
+        role: p.user?.role || null,
         totalInvestments: pInvestments,
         totalWithdrawals: pWithdrawals,
         profitShare: pProfitShare,
@@ -112,7 +113,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, phone, investmentAmount, ownershipPercentage, partnerType, username, password } = await req.json();
+    const { name, phone, investmentAmount, ownershipPercentage, partnerType, username, password, accessLevel } = await req.json();
 
     if (!name || !phone || !partnerType) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -133,14 +134,25 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Password is required when username is provided" }, { status: 400 });
       }
 
+      let userRole = "PARTNER";
+      let userPermissions = "read,request_withdrawal,request_investment";
+
+      if (accessLevel === "FULL") {
+        userRole = "ADMIN";
+        userPermissions = "all";
+      } else if (accessLevel === "SALES") {
+        userRole = "STAFF";
+        userPermissions = "read,edit_stock,edit_sales";
+      }
+
       const { hashPassword } = await import("@/lib/crypto");
       const userRecord = await db.user.create({
         data: {
           username,
           name,
           passwordHash: hashPassword(password),
-          role: "PARTNER",
-          permissions: "read,request_withdrawal,request_investment",
+          role: userRole,
+          permissions: userPermissions,
         },
       });
       createdUserId = userRecord.id;
@@ -195,7 +207,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id, name, phone, ownershipPercentage, partnerType, username, password, additionalInvestment } = await req.json();
+    const { id, name, phone, ownershipPercentage, partnerType, username, password, additionalInvestment, accessLevel } = await req.json();
 
     if (!id) {
       return NextResponse.json({ error: "Partner ID is required" }, { status: 400 });
@@ -225,6 +237,17 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json({ error: "Username is already taken" }, { status: 400 });
       }
 
+      let userRole = "PARTNER";
+      let userPermissions = "read,request_withdrawal,request_investment";
+
+      if (accessLevel === "FULL") {
+        userRole = "ADMIN";
+        userPermissions = "all";
+      } else if (accessLevel === "SALES") {
+        userRole = "STAFF";
+        userPermissions = "read,edit_stock,edit_sales";
+      }
+
       if (existingPartner.user) {
         // Update existing user details
         await db.user.update({
@@ -233,6 +256,8 @@ export async function PUT(req: NextRequest) {
             username,
             name,
             passwordHash: password ? hashPassword(password) : undefined,
+            role: userRole,
+            permissions: userPermissions,
           },
         });
       } else {
@@ -245,8 +270,8 @@ export async function PUT(req: NextRequest) {
             username,
             name,
             passwordHash: hashPassword(password),
-            role: "PARTNER",
-            permissions: "read,request_withdrawal,request_investment",
+            role: userRole,
+            permissions: userPermissions,
           },
         });
         nextUserId = newUser.id;
